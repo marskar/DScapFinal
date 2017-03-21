@@ -1,0 +1,266 @@
+---
+title: "DScapFinalReport"
+author: "Martin Skarzynski"
+date: "March 20, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Data Science Capstone Final Report Introduction
+
+As part of Data Science Specialization Capstone experience, 
+I have demonstrate the ability to work with relatively unstructured text data.
+The first step is to download and read in the data. 
+
+The code below is from the course materials. It shows how to for read data from txt files using the readLines function. 
+
+con <- file("en_US.twitter.txt", "r") 
+readLines(con, 1) ## Read the first line of text 
+readLines(con, 1) ## Read the next line of text 
+readLines(con, 5) ## Read in the next 5 lines of text 
+close(con) ## It's important to close the connection when you are done
+## Download and read in the data
+The data are available at this url: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip
+### Download the data
+```{r}
+
+## Download the raw data file...
+## Unless you already have it in your working directory
+if (!file.exists("Coursera-SwiftKey.zip")) {
+  download.file("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip",
+  destfile = paste(getwd(),"/Coursera-SwiftKey.zip", sep=""))
+  unzip("Coursera-SwiftKey.zip")
+}
+```
+### Load filepaths into memory
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+## You can set your working directory to final/en_US...
+## and then use the filenames (wrapped in quotes)...
+## but I prefer to load the path into memory...
+path<-paste(getwd(),"/final/en_US", sep="")
+## and then load the filenames into memory.
+files<-list.files(path)
+##Here are the file names
+print(files)
+
+## If I had more files, I would use a loop for the next steps...
+## but for 3 files it is not worth it and in my opinion,
+## avoiding loops makes the code more readable and faster...
+
+## Load file paths into memory
+blogPath <- paste(path,"/", files[1],sep="")
+newsPath <- paste(path,"/", files[2],sep="")
+twitPath <- paste(path,"/", files[3],sep="")
+```
+
+### Read in the data
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+## First, I will read in all of the data, but later I will take a subsample.
+## The raw binary (rb) method was the only way I could read in the full news data set. 
+## I skipped the embedded nuls in all, though these were only in the twitter data set.
+con <- file(blogPath, open="rb")
+blog<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
+close(con)
+
+con <- file(newsPath, open="rb")
+news<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
+close(con)
+
+con <- file(twitPath, open="rb")
+twit<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
+close(con)
+```
+## Sample the data and obtain descriptive statistics
+### Obtain a sample of the data
+Now, we will obtain the same set of statistics for a sample of the data.
+First, I will set the seed so that I can obtain the same exact samples later.
+Next, I could sample by number of characters or words, but I will sample by line count.
+ 
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+
+
+system('split ./final/en_US/en_US.twitter.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="en_US.twitter.txt"')
+
+system('split ./final/en_US/en_US.news.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="en_US.news.txt"')
+
+system('split ./final/en_US/en_US.blogs.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="en_US.blogs.txt"')
+
+system('mkdir split')
+system('mv x* split')
+
+
+set.seed(20170219)
+ 
+blog1 <- sample(blog, size = length(blog) / 1000, replace = FALSE)
+news1 <- sample(news, size = length(news)/1000, replace = FALSE)
+twit1 <- sample(twit, size = length(twit) / 1000, replace = FALSE)
+##  I used the rbinom subsetting method below and it did not work for me.
+## For whatever reason, it truncated the dataset samples
+#blog <- blog[rbinom(length(blog)/1000, length(blog), .5)]
+#news <- news[rbinom(length(news)/1000, length(news), .5)]
+#twit <- twit[rbinom(length(twit)/1000, length(twit), .5)]
+```
+
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+
+## Get the number of lines
+blogLines <- length(blog)
+newsLines <- length(news)
+twitLines <- length(twit)
+```
+
+## Data cleaning
+For the data cleaning steps, I will first put all three of the datasets together.
+Then I will remove stop words, extra whitespace, punctuation, profanity, one-letter words and symbols. For many of these steps, I will use the tm package.
+### Put all of the dataset samples together
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+#install.packages("tm")
+library(tm)
+## Put all of the data samples together
+#dat<- c(blog,news,twit)
+dat<- c(blog,news,twit)
+```
+### Remove punctuation, multiple spaces, non-ASCII characters, and convert to lowercase
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+library(tm)
+# convert string to vector of words
+dat1<-removePunctuation(dat)
+dat2<-stripWhitespace(dat1)
+?stripWhitespace
+# Convert to ASCII and remove non-ASCII characters
+dat3<-iconv(dat2, "UTF-8", "ASCII", sub="")
+# make corpus
+dat4 <- tolower(dat3)
+
+```
+
+### Remove profanity
+At first, I was not sure whether to remove profanity...
+because I didn't like the list of "bad" words I found on github e.g.
+https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/blob/master/en
+and https://gist.github.com/jamiew/1112488
+There are perfectly normal (in my opinion) words mixed in those lists e.g. anatomical words
+We are all adults here (I assume) and I think the profane words can also be interesting for analysis.
+I decided to remove profanity because
+I was terrified at the thought that N-word would be one of the top ranked unigrams by frequency :/
+In the end, it did not make a big difference in object size, so probably not a big loss in data.
+
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+## download profanity word lists
+if (!file.exists("profan1.csv")) {
+download.file("https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/master/en", 
+    destfile = paste(getwd(),"/profan1.csv", sep=""))
+}
+if (!file.exists("profan2.csv")) {
+download.file("https://gist.githubusercontent.com/jamiew/1112488/raw/7ca9b1669e1c24b27c66174762cb04e14cf05aa7/google_twunter_lol", 
+    destfile = paste(getwd(),"/profan2.csv", sep=""))
+}
+##Read in profanity word lists
+profan1<- as.character(read.csv("profan1.csv", header=FALSE))
+profan2<- as.character(row.names(read.csv("profan2.csv", header=TRUE, sep = ":")))
+## Put the two lists together
+profan<-c(profan1, profan2)
+## Trim the first and last line of profan
+profan<-profan[-1]
+profan<-profan[-length(profan)]
+## Remove profanity
+datNoProfan <- removeWords(dat4, profan) 
+
+## Find out the object size difference after removing profanity
+object.size(dat4)
+object.size(datNoProfan)
+object.size(dat4)-object.size(datNoProfan)
+```
+
+##Tokenization
+Here I put together lists of unigrams, bigrams and trigrams.
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+## I was not able to install RWeka package, because of a java version problem.
+## Instead of trying to figure it out, I used the ngram_tokenizer snippet
+## created by Maciej Szymkiewicz, aka zero323 on Github.
+if (!file.exists("ngram_tokenizer.R")) {
+download.file("https://raw.githubusercontent.com/zero323/r-snippets/master/R/ngram_tokenizer.R", 
+    destfile = paste(getwd(),"/ngram_tokenizer.R", sep=""))
+}
+source("ngram_Tokenizer.R")
+unigram_tokenizer <- ngram_tokenizer(1)
+uniList <- unigram_tokenizer(datNoProfan)
+freqNames <- as.vector(names(table(unlist(uniList))))
+freqCount <- as.numeric(table(unlist(uniList)))
+dfUni <- data.frame(Word = freqNames,
+                    Count = freqCount)
+attach(dfUni)
+dfUniSort<-dfUni[order(-Count),]
+detach(dfUni)
+
+bigram_tokenizer <- ngram_tokenizer(2)
+biListTest <- bigram_tokenizer(datNoProfan)
+freqNamesTest <- as.vector(names(table(unlist(biListTest))))
+freqCountTest <- as.numeric(table(unlist(biListTest)))
+dfBiTest <- data.frame(Word = freqNamesTest,
+                    Count = freqCountTest)
+attach(dfBiTest)
+dfBiSortTest<-dfBiTest[order(-Count),]
+detach(dfBiTest)
+
+trigram_tokenizer <- ngram_tokenizer(3)
+triList <- trigram_tokenizer(datNoShort)
+freqNames <- as.vector(names(table(unlist(triList))))
+freqCount <- as.numeric(table(unlist(triList)))
+dfTri <- data.frame(Word = freqNames,
+                    Count = freqCount)
+attach(dfTri)
+dfTriSort<-dfTri[order(-Count),]
+detach(dfTri)
+```
+
+## Exploratory Data Analysis
+After preparing the Ngram lists, I am ready to visualize the data
+First, I will make some histograms to show the most frequent words
+### Unigram histogram
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+par(mar = c(8,4,1,1) + 0.1, las = 2)
+barplot(dfUniSort[1:20,2],col="blue",
+        names.arg = dfUniSort$Word[1:20],srt = 45,
+        space=0.1, xlim=c(0,20),
+        main = "Top 20 Unigrams by Frequency",
+        cex.names = 1, xpd = FALSE)
+```
+### Bigram histogram
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+par(mar = c(8,4,1,1) + 0.1, las = 2)
+barplot(dfBiSort[1:20,2],col="green",
+        names.arg = dfBiSort$Word[1:20],srt = 45,
+        space=0.1, xlim=c(0,20),
+        main = "Top 20 Bigrams by Frequency",
+        cex.names = 1, xpd = FALSE)
+```
+### Trigram histogram
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+par(mar = c(8,4,1,1) + 0.1, las = 2)
+barplot(dfTriSort[1:20,2],col="red",
+        names.arg = dfTriSort$Word[1:20],srt = 45,
+        space=0.1, xlim=c(0,20),
+        main = "Top 20 Trigrams by Frequency",
+        cex.names = 1, xpd = FALSE)
+?barplot
+```
+
+## Exploratory Data Analysis Conclusions
+Based on the plots above, it appears that the data cleaning and tokenization steps worked.
+I think removing single letter words does not hurt. I concluded that I should not remove two-letter words, as the lack of the word "of" may result in some meaning being lost.
+I believe these steps work well but they take a long time and I need to think about efficiency when training my model.
+
+## Observations
+I noticed foreign words (mostly in Spanish) in the output files. These may cause problems, so I will work on a way of removing the words using a Spanish dictionary (word list). This will be similar to the approach of removing profanity. It would be great to make an app that could translate foreign words on the fly so that they can also be used in the analysis. That being said, I think however it will be better to simply remove foreign words to. 
+
+## Next steps
+For my app, I am interested in providing functionality for hash tags from the twitter data. The idea is to predict what may follow a hash tag, just like other words. Hashtags by themselves are unigrams even if they represent multiple words (e.g. #HungryLikeAWolf), but they may be preceeded by other words. The predictive model would first try to predict by a quadgram, then a trigram, then a bigram and finally the word itself. 
+In addition to word buttons to insert the text, I plan to show the output as a wordcloud wherein the word size is the probability of that word following what the user typed in.
+
+
+
+
