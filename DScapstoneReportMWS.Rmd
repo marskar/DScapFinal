@@ -56,6 +56,28 @@ newsPath <- paste(path,"/", files[2],sep="")
 twitPath <- paste(path,"/", files[3],sep="")
 ```
 
+
+## Split the data into samples
+
+
+The reason I broke the data down like this is to avoid reading too much of the data into memory at once.
+The split method can work by number of characters, words, or line count.
+ 
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+
+# Here I use a system command to split the data into 1MB chunks
+system('split ./final/en_US/en_US.twitter.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="twit.txt"')
+
+system('split ./final/en_US/en_US.news.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="news.txt"')
+
+system('split ./final/en_US/en_US.blogs.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="blog.txt"')
+
+system('mkdir split')
+system('mv x* split')
+
+
+```
+
 ### Read in the data
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
 ## First, I will read in all of the data, but later I will take a subsample.
@@ -73,27 +95,9 @@ con <- file(twitPath, open="rb")
 twit<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
 close(con)
 ```
-## Sample the data and obtain descriptive statistics
-### Obtain a sample of the data
-Now, we will obtain the same set of statistics for a sample of the data.
-First, I will set the seed so that I can obtain the same exact samples later.
-Next, I could sample by number of characters or words, but I will sample by line count.
- 
-```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
-
-
-system('split ./final/en_US/en_US.twitter.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="en_US.twitter.txt"')
-
-system('split ./final/en_US/en_US.news.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="en_US.news.txt"')
-
-system('split ./final/en_US/en_US.blogs.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="en_US.blogs.txt"')
-
-system('mkdir split')
-system('mv x* split')
-
 
 set.seed(20170219)
- 
+
 blog1 <- sample(blog, size = length(blog) / 1000, replace = FALSE)
 news1 <- sample(news, size = length(news)/1000, replace = FALSE)
 twit1 <- sample(twit, size = length(twit) / 1000, replace = FALSE)
@@ -107,10 +111,12 @@ twit1 <- sample(twit, size = length(twit) / 1000, replace = FALSE)
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
 
 ## Get the number of lines
-blogLines <- length(blog)
-newsLines <- length(news)
-twitLines <- length(twit)
+#blogLines <- length(blog)
+#newsLines <- length(news)
+#twitLines <- length(twit)
 ```
+
+
 
 ## Data cleaning
 For the data cleaning steps, I will first put all three of the datasets together.
