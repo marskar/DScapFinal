@@ -51,41 +51,20 @@ print(files)
 ## avoiding loops makes the code more readable and faster...
 
 ## Load file paths into memory
-blogPath <- paste(path,"/", files[1],sep="")
+#blogPath <- paste(path,"/", files[1],sep="")
 newsPath <- paste(path,"/", files[2],sep="")
 twitPath <- paste(path,"/", files[3],sep="")
 ```
 
-
-## Split the data into samples
-
-
-The reason I broke the data down like this is to avoid reading too much of the data into memory at once.
-The split method can work by number of characters, words, or line count.
- 
-```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
-
-# Here I use a system command to split the data into 1MB chunks
-system('split ./final/en_US/en_US.twitter.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="twit.txt"')
-
-system('split ./final/en_US/en_US.news.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="news.txt"')
-
-system('split ./final/en_US/en_US.blogs.txt --bytes=1M -d --numeric-suffixes --suffix-length=3 --additional-suffix="blog.txt"')
-
-system('mkdir split')
-system('mv x* split')
-
-
-```
 
 ### Read in the data
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
 ## First, I will read in all of the data, but later I will take a subsample.
 ## The raw binary (rb) method was the only way I could read in the full news data set. 
 ## I skipped the embedded nuls in all, though these were only in the twitter data set.
-con <- file(blogPath, open="rb")
-blog<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
-close(con)
+#con <- file(blogPath, open="rb")
+#blog<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
+#close(con)
 
 con <- file(newsPath, open="rb")
 news<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
@@ -96,13 +75,15 @@ twit<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
 close(con)
 ```
 
-## Split data by length 
+## Sample roughly 3 percent of the news and twitter data
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
 
 set.seed(20170219)
+#blog1 <- sample(blog, size = length(blog)/100, replace = FALSE)
+news1 <- sample(news, size = 50000, replace = FALSE)
+twit1 <- sample(twit, size = 50000, replace = FALSE)
+100000/(length(twit)+length(news))*100
 
-news1 <- sample(news, size = length(news)/100, replace = FALSE)
-twit1 <- sample(twit, size = length(twit) / 100, replace = FALSE)
 ##  I used the rbinom subsetting method below and it did not work for me.
 ## For whatever reason, it truncated the dataset samples
 #blog <- blog[rbinom(length(blog)/1000, length(blog), .5)]
@@ -117,11 +98,11 @@ Then I will remove stop words, extra whitespace, punctuation, profanity, one-let
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
 ## Put all of the data samples together
 #dat<- c(blog,news,twit)
-dat<- c(news,twit)
+dat<- c(news1,twit1)
 ```
 ### Remove punctuation, multiple spaces, non-ASCII characters, and convert to lowercase
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
-install.packages("tm")
+#install.packages("tm")
 library(tm)
 # remove punctuation and convert to lowercase
 dat1<-removePunctuation(dat)
@@ -189,14 +170,14 @@ dfUniSort<-dfUni[order(-Count),]
 detach(dfUni)
 
 bigram_tokenizer <- ngram_tokenizer(2)
-biListTest <- bigram_tokenizer(datFin)
-freqNamesTest <- as.vector(names(table(unlist(biListTest))))
-freqCountTest <- as.numeric(table(unlist(biListTest)))
-dfBiTest <- data.frame(Word = freqNamesTest,
-                    Count = freqCountTest)
-attach(dfBiTest)
-dfBiSortTest<-dfBiTest[order(-Count),]
-detach(dfBiTest)
+biList <- bigram_tokenizer(datFin)
+freqNames <- as.vector(names(table(unlist(biList))))
+freqCount <- as.numeric(table(unlist(biList)))
+dfBi <- data.frame(Word = freqNames,
+                    Count = freqCount)
+attach(dfBi)
+dfBiSort<-dfBi[order(-Count),]
+detach(dfBi)
 
 trigram_tokenizer <- ngram_tokenizer(3)
 triList <- trigram_tokenizer(datFin)
@@ -207,7 +188,75 @@ dfTri <- data.frame(Word = freqNames,
 attach(dfTri)
 dfTriSort<-dfTri[order(-Count),]
 detach(dfTri)
+
+
+quadgram_tokenizer <- ngram_tokenizer(4)
+quadList <- quadgram_tokenizer(datFin)
+freqNames <- as.vector(names(table(unlist(quadList))))
+freqCount <- as.numeric(table(unlist(quadList)))
+dfQuad <- data.frame(Word = freqNames,
+                    Count = freqCount)
+attach(dfQuad)
+dfQuadSort<-dfQuad[order(-Count),]
+detach(dfQuad)
+
+
+pentagram_tokenizer <- ngram_tokenizer(5)
+pentaList <- pentagram_tokenizer(datFin)
+freqNames <- as.vector(names(table(unlist(pentaList))))
+freqCount <- as.numeric(table(unlist(pentaList)))
+dfPenta <- data.frame(Word = freqNames,
+                    Count = freqCount)
+attach(dfPenta)
+dfPentaSort<-dfPenta[order(-Count),]
+detach(dfPenta)
+
+hexagram_tokenizer <- ngram_tokenizer(6)
+hexaList <- hexagram_tokenizer(datFin)
+freqNames <- as.vector(names(table(unlist(hexaList))))
+freqCount <- as.numeric(table(unlist(hexaList)))
+dfHexa <- data.frame(Word = freqNames,
+                    Count = freqCount)
+attach(dfHexa)
+dfHexaSort<-dfHexa[order(-Count),]
+detach(dfHexa)
+
+heptagram_tokenizer <- ngram_tokenizer(7)
+heptaList <- heptagram_tokenizer(datFin)
+freqNames <- as.vector(names(table(unlist(heptaList))))
+freqCount <- as.numeric(table(unlist(heptaList)))
+dfHepta <- data.frame(Word = freqNames,
+                    Count = freqCount)
+attach(dfHepta)
+dfHeptaSort<-dfHepta[order(-Count),]
+detach(dfHepta)
+
 ```
+
+## Trim Ngram Lists 
+Here I trim the lists of unigrams, bigrams and trigrams etc. by removing those with only 1 count.
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+uni <- dfUniSort[which(dfUniSort$Count>1),]
+bi <- dfBiSort[which(dfBiSort$Count>1),]
+tri <- dfTriSort[which(dfTriSort$Count>1),]
+quad <- dfQuadSort[which(dfQuadSort$Count>1),]
+penta <- dfPentaSort[which(dfPentaSort$Count>1),]
+hexa <- dfHexaSort[which(dfHexaSort$Count>1),]
+hepta <- dfHeptaSort[which(dfHeptaSort$Count>1),]
+
+```
+## Save Trimmed Ngram Lists as csv
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+write.csv(uni, "uni.csv")
+write.csv(bi, "bi.csv")
+write.csv(tri, "tri.csv")
+write.csv(quad, "quad.csv")
+write.csv(penta, "penta.csv")
+write.csv(hexa, "hexa.csv")
+write.csv(hepta, "hepta.csv")
+write.csv(dfUniSort, "uniAll.csv")
+```
+
 
 ## Exploratory Data Analysis
 After preparing the Ngram lists, I am ready to visualize the data
@@ -238,8 +287,51 @@ barplot(dfTriSort[1:20,2],col="red",
         space=0.1, xlim=c(0,20),
         main = "Top 20 Trigrams by Frequency",
         cex.names = 1, xpd = FALSE)
-?barplot
+
 ```
+
+
+### Quadgram histogram
+
+par(mar = c(8,4,1,1) + 0.1, las = 2)
+barplot(dfQuadSort[1:20,2],col="red",
+        names.arg = dfQuadSort$Word[1:20],srt = 45,
+        space=0.1, xlim=c(0,20),
+        main = "Top 20 Quadgrams by Frequency",
+        cex.names = 1, xpd = FALSE)
+
+
+### Pentagram histogram
+
+par(mar = c(8,4,1,1) + 0.1, las = 2)
+barplot(dfPentaSort[1:20,2],col="red",
+        names.arg = dfPentaSort$Word[1:20],srt = 45,
+        space=0.1, xlim=c(0,20),
+        main = "Top 20 Pentagrams by Frequency",
+        cex.names = 1, xpd = FALSE)
+
+
+### Hexagram histogram
+
+par(mar = c(8,4,1,1) + 0.1, las = 2)
+barplot(dfHexaSort[1:20,2],col="red",
+        names.arg = dfHexaSort$Word[1:20],srt = 45,
+        space=0.1, xlim=c(0,20),
+        main = "Top 20 Hexagrams by Frequency",
+        cex.names = 1, xpd = FALSE)
+
+
+### Heptagram histogram
+
+par(mar = c(8,4,1,1) + 0.1, las = 2)
+barplot(dfHeptaSort[1:20,2],col="red",
+        names.arg = dfHeptaSort$Word[1:20],srt = 45,
+        space=0.1, xlim=c(0,20),
+        main = "Top 20 Heptagrams by Frequency",
+        cex.names = 1, xpd = FALSE)
+
+
+
 ## Predictive model
 The predictive model would first try to predict by a quadgram, then a trigram, then a bigram and finally the word itself. 
 In addition to word buttons to insert the text, I plan to show the output as a wordcloud wherein the word size is the probability of that word following what the user typed in.
