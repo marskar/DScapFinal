@@ -96,11 +96,13 @@ twit<-readLines(con, skipNul = TRUE, encoding = "UTF-8")
 close(con)
 ```
 
+## Split data by length 
+```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+
 set.seed(20170219)
 
-blog1 <- sample(blog, size = length(blog) / 1000, replace = FALSE)
-news1 <- sample(news, size = length(news)/1000, replace = FALSE)
-twit1 <- sample(twit, size = length(twit) / 1000, replace = FALSE)
+news1 <- sample(news, size = length(news)/100, replace = FALSE)
+twit1 <- sample(twit, size = length(twit) / 100, replace = FALSE)
 ##  I used the rbinom subsetting method below and it did not work for me.
 ## For whatever reason, it truncated the dataset samples
 #blog <- blog[rbinom(length(blog)/1000, length(blog), .5)]
@@ -108,38 +110,25 @@ twit1 <- sample(twit, size = length(twit) / 1000, replace = FALSE)
 #twit <- twit[rbinom(length(twit)/1000, length(twit), .5)]
 ```
 
-```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
-
-## Get the number of lines
-#blogLines <- length(blog)
-#newsLines <- length(news)
-#twitLines <- length(twit)
-```
-
-
-
 ## Data cleaning
 For the data cleaning steps, I will first put all three of the datasets together.
 Then I will remove stop words, extra whitespace, punctuation, profanity, one-letter words and symbols. For many of these steps, I will use the tm package.
 ### Put all of the dataset samples together
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
-#install.packages("tm")
-library(tm)
 ## Put all of the data samples together
 #dat<- c(blog,news,twit)
-dat<- c(blog,news,twit)
+dat<- c(news,twit)
 ```
 ### Remove punctuation, multiple spaces, non-ASCII characters, and convert to lowercase
 ```{r echo=TRUE, eval=TRUE, warning=FALSE, error=FALSE}
+install.packages("tm")
 library(tm)
-# convert string to vector of words
+# remove punctuation and convert to lowercase
 dat1<-removePunctuation(dat)
-dat2<-stripWhitespace(dat1)
-?stripWhitespace
+
 # Convert to ASCII and remove non-ASCII characters
-dat3<-iconv(dat2, "UTF-8", "ASCII", sub="")
-# make corpus
-dat4 <- tolower(dat3)
+dat2<-iconv(dat1, "UTF-8", "ASCII", sub="")
+dat3 <- tolower(dat2)
 
 ```
 
@@ -173,12 +162,9 @@ profan<-c(profan1, profan2)
 profan<-profan[-1]
 profan<-profan[-length(profan)]
 ## Remove profanity
-datNoProfan <- removeWords(dat4, profan) 
+datNoProfan <- removeWords(dat3, profan) 
 
-## Find out the object size difference after removing profanity
-object.size(dat4)
-object.size(datNoProfan)
-object.size(dat4)-object.size(datNoProfan)
+datFin<-stripWhitespace(datNoProfan)
 ```
 
 ##Tokenization
@@ -193,7 +179,7 @@ download.file("https://raw.githubusercontent.com/zero323/r-snippets/master/R/ngr
 }
 source("ngram_Tokenizer.R")
 unigram_tokenizer <- ngram_tokenizer(1)
-uniList <- unigram_tokenizer(datNoProfan)
+uniList <- unigram_tokenizer(datFin)
 freqNames <- as.vector(names(table(unlist(uniList))))
 freqCount <- as.numeric(table(unlist(uniList)))
 dfUni <- data.frame(Word = freqNames,
@@ -203,7 +189,7 @@ dfUniSort<-dfUni[order(-Count),]
 detach(dfUni)
 
 bigram_tokenizer <- ngram_tokenizer(2)
-biListTest <- bigram_tokenizer(datNoProfan)
+biListTest <- bigram_tokenizer(datFin)
 freqNamesTest <- as.vector(names(table(unlist(biListTest))))
 freqCountTest <- as.numeric(table(unlist(biListTest)))
 dfBiTest <- data.frame(Word = freqNamesTest,
@@ -213,7 +199,7 @@ dfBiSortTest<-dfBiTest[order(-Count),]
 detach(dfBiTest)
 
 trigram_tokenizer <- ngram_tokenizer(3)
-triList <- trigram_tokenizer(datNoShort)
+triList <- trigram_tokenizer(datFin)
 freqNames <- as.vector(names(table(unlist(triList))))
 freqCount <- as.numeric(table(unlist(triList)))
 dfTri <- data.frame(Word = freqNames,
@@ -254,17 +240,8 @@ barplot(dfTriSort[1:20,2],col="red",
         cex.names = 1, xpd = FALSE)
 ?barplot
 ```
-
-## Exploratory Data Analysis Conclusions
-Based on the plots above, it appears that the data cleaning and tokenization steps worked.
-I think removing single letter words does not hurt. I concluded that I should not remove two-letter words, as the lack of the word "of" may result in some meaning being lost.
-I believe these steps work well but they take a long time and I need to think about efficiency when training my model.
-
-## Observations
-I noticed foreign words (mostly in Spanish) in the output files. These may cause problems, so I will work on a way of removing the words using a Spanish dictionary (word list). This will be similar to the approach of removing profanity. It would be great to make an app that could translate foreign words on the fly so that they can also be used in the analysis. That being said, I think however it will be better to simply remove foreign words to. 
-
-## Next steps
-For my app, I am interested in providing functionality for hash tags from the twitter data. The idea is to predict what may follow a hash tag, just like other words. Hashtags by themselves are unigrams even if they represent multiple words (e.g. #HungryLikeAWolf), but they may be preceeded by other words. The predictive model would first try to predict by a quadgram, then a trigram, then a bigram and finally the word itself. 
+## Predictive model
+The predictive model would first try to predict by a quadgram, then a trigram, then a bigram and finally the word itself. 
 In addition to word buttons to insert the text, I plan to show the output as a wordcloud wherein the word size is the probability of that word following what the user typed in.
 
 
