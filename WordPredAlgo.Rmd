@@ -1,0 +1,100 @@
+---
+title: "WordPredAlgo"
+author: "Martin Skarzynski"
+date: "March 23, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load preprocessed data
+```{r}
+uni<-read.csv("uni.csv")
+bi<-read.csv("bi.csv")
+tri<-read.csv("tri.csv")
+quad<-read.csv("quad.csv")
+penta<-read.csv("penta.csv")
+hexa<-read.csv("hexa.csv")
+hepta<-read.csv("hepta.csv")
+```
+## Split ngrams into n-1grams and last words
+
+```{r}
+
+bi$Word<-as.character(bi$Word)
+bi2 <- do.call(rbind, strsplit(bi$Word, split = " "))
+bi3 <- cbind(bi2[, 1], bi2[, 2])
+colnames(bi3)<-c("biMinus1","NextWord")
+
+
+tri$Word<-as.character(tri$Word)
+tri2 <- do.call(rbind, strsplit(tri$Word, split = " "))
+tri3 <- cbind(apply(tri2[, 1:2], 1, function(x) paste(x, collapse = " ")),
+                  tri2[, 3])
+colnames(tri3)<-c("triMinus1","NextWord")
+
+quad$Word<-as.character(quad$Word)
+quad2 <- do.call(rbind, strsplit(quad$Word, split = " "))
+quad3 <- cbind(apply(quad2[, 1:3], 1, function(x) paste(x, collapse = " ")),
+                  quad2[, 4])
+colnames(quad3)<-c("quadMinus1","NextWord")
+
+penta$Word<-as.character(penta$Word)
+penta2 <- do.call(rbind, strsplit(penta$Word, split = " "))
+penta3 <- cbind(apply(penta2[, 1:4], 1, function(x) paste(x, collapse = " ")),
+                  penta2[, 5])
+colnames(penta3)<-c("pentaMinus1","NextWord")
+
+hexa$Word<-as.character(hexa$Word)
+hexa2 <- do.call(rbind, strsplit(hexa$Word, split = " "))
+hexa3 <- cbind(apply(hexa2[, 1:5], 1, function(x) paste(x, collapse = " ")),
+                  hexa2[, 6])
+colnames(hexa3)<-c("hexaMinus1","NextWord")
+
+hepta$Word<-as.character(hepta$Word)
+hepta2 <- do.call(rbind, strsplit(hepta$Word, split = " "))
+hepta3 <- cbind(apply(hepta2[, 1:6], 1, function(x) paste(x, collapse = " ")),
+                  hepta2[, 7])
+colnames(hepta3)<-c("heptaMinus1","NextWord")
+
+```
+
+```{r}
+predictNgram <- function(input, uni, bi3, tri3){
+      input <- tolower(input)
+      splitInput <- unlist(strsplit(input, split = " "))
+      if (length(splitInput) > 2){
+            input2 <- paste(tail(splitInput, 2), collapse = " ")
+      } else {
+            input2 <- paste(splitInput, collapse = " ")
+      }
+      trigramPred <- tail(tri3[,triMinus1 == input2]$NextWord, 10)
+      if (length(trigramPred > 0)){
+            print("trigramPred")
+            return(trigramPred)
+      } else {
+            input2 <- tail(splitInput, 1)
+            bigramPred <- tail(bi3[,biMinus1 == input2]$NextWord, 10)
+            if (length(bigramPred) > 0){
+                  print("bigramPred")
+                  return(bigramPred)
+            } else {
+                  unigramPred <- tail(uni[Word == input2]$NextWord, 10)
+                  if (length(unigramPred) > 0){
+                        print("unigramPred")
+                        return(unigramPred)
+                  } else {
+                        tokenPred <- tail(uni$Word, 1)
+                        print("tokenPred")
+                        return(tokenPred)
+                  }
+            }
+      }
+}
+
+predictNgram("Adam Sandler is the only", uni, bi, tri3)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
