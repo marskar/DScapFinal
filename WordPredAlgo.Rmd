@@ -62,7 +62,35 @@ colnames(hepta3)<-c("heptaMinus1","NextWord")
 ```
 
 ```{r}
-predictNgram <- function(input, uni, bi3, tri3){
+
+```
+
+
+```{r}
+
+df7<-as.data.frame(hepta3)
+df6<-as.data.frame(hexa3)
+df5<-as.data.frame(penta3)
+df4<-as.data.frame(quad3)
+df3<-as.data.frame(tri3)
+df2<-as.data.frame(bi3)
+df1<-as.data.frame(uni$Word)
+
+conv2char <- function(x) data.frame(lapply(x, as.character), stringsAsFactors=FALSE)
+
+df1<-conv2char(df1)
+df2<-conv2char(df2)
+df3<-conv2char(df3)
+df4<-conv2char(df4)
+df5<-conv2char(df5)
+df6<-conv2char(df6)
+df7<-conv2char(df7)
+
+class(df3$triMinus1)
+colnames(df1)<- "Word"
+
+
+predictNgram <- function(input, df1, df2, df3){
       input <- tolower(input)
       splitInput <- unlist(strsplit(input, split = " "))
       if (length(splitInput) > 2){
@@ -70,31 +98,29 @@ predictNgram <- function(input, uni, bi3, tri3){
       } else {
             input2 <- paste(splitInput, collapse = " ")
       }
-      trigramPred <- tail(tri3[,triMinus1 == input2]$NextWord, 10)
+      trigramPred <- tail(df3[which(df3$triMinus1 == input2),]$NextWord, 10)
       if (length(trigramPred > 0)){
             print("trigramPred")
             return(trigramPred)
       } else {
             input2 <- tail(splitInput, 1)
-            bigramPred <- tail(bi3[,biMinus1 == input2]$NextWord, 10)
+            bigramPred <- tail(df2[which(df2$biMinus1 == input2),]$NextWord, 10)
             if (length(bigramPred) > 0){
                   print("bigramPred")
                   return(bigramPred)
             } else {
-                  unigramPred <- tail(uni[Word == input2]$NextWord, 10)
+                  unigramPred <- tail(df1$Word, 10)
                   if (length(unigramPred) > 0){
                         print("unigramPred")
                         return(unigramPred)
-                  } else {
-                        tokenPred <- tail(uni$Word, 1)
-                        print("tokenPred")
-                        return(tokenPred)
                   }
             }
       }
 }
 
-predictNgram("Adam Sandler is the only", uni, bi, tri3)
+predictNgram("Adam Sandler is the only", df1, df2, df3)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
