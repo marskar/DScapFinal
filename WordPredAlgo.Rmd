@@ -89,9 +89,8 @@ df7<-conv2char(df7)
 class(df3$triMinus1)
 colnames(df1)<- "Word"
 
-
 predictNgram <- function(input, df1, df2, df3){
-      input <- tolower(input)
+      input <- stripWhitespace(removePunctuation(tolower(input)))
       splitInput <- unlist(strsplit(input, split = " "))
       if (length(splitInput) > 2){
             input2 <- paste(tail(splitInput, 2), collapse = " ")
@@ -100,25 +99,25 @@ predictNgram <- function(input, df1, df2, df3){
       }
       trigramPred <- tail(df3[which(df3$triMinus1 == input2),]$NextWord, 10)
       if (length(trigramPred > 0)){
-            print("trigramPred")
+            print("I was able to match the last three words")
             return(trigramPred)
       } else {
             input2 <- tail(splitInput, 1)
             bigramPred <- tail(df2[which(df2$biMinus1 == input2),]$NextWord, 10)
             if (length(bigramPred) > 0){
-                  print("bigramPred")
+                  print("I was able to match the last two words")
                   return(bigramPred)
             } else {
-                  unigramPred <- tail(df1$Word, 10)
+                  unigramPred <- tail(uni$Word, 10)
                   if (length(unigramPred) > 0){
-                        print("unigramPred")
+                        print("I was not able to find a match, but here are some common words")
                         return(unigramPred)
                   }
             }
       }
 }
 
-predictNgram("Adam Sandler is the only", df1, df2, df3)
+predictNgram("Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his", df1, df2, df3)
 
 ```
 

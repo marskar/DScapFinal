@@ -1,6 +1,7 @@
 install.packages("RWeka")
 install.packages("tm")
 library(tm)
+remove
 library(RWeka)
 dat1<-iconv(dat, "UTF-8", "ASCII", sub="")
 corp <- VCorpus(VectorSource(dat1))
