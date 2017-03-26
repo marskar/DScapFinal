@@ -39,11 +39,10 @@ shinyUI(fluidPage(
       tabsetPanel(
         tabPanel(
           "Prediction",
-          h4("The predicted word (with highest probability) is:"),
+          h4(textOutput("kText")),
           h3(textOutput("wordPred"), align="center"),
           # HTML("</span>"),
           br(),
-          h4(textOutput("kText")),
           hr()#,
           # div(dataTableOutput("predTable"), style='font-size:150%')        
         ),

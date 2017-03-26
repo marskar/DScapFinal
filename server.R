@@ -9,22 +9,24 @@
 
 library(shiny)
 library(markdown)
+library(tm)
 # Load in data objects from rds
 df1 = readRDS("top10.Rds")
-df2 = readRDS("df2.Rds")
-df3 = readRDS("df3.Rds")
-df4 = readRDS("df4.Rds")
-df5 = readRDS("df5.Rds")
-df6 = readRDS("df6.Rds")
-df7 = readRDS("df7.Rds")
+df2 = readRDS("df2tiny.Rds")
+df3 = readRDS("df3tiny.Rds")
+df4 = readRDS("df4tiny.Rds")
+df5 = readRDS("df5tiny.Rds")
+df6 = readRDS("df6tiny.Rds")
+df7 = readRDS("df7tiny.Rds")
+
 # Define server logic required to predict next word
 shinyServer(function(input, output) {
    
   
   ## Prediction Algorithm
-  predictNgram <- function(input, df1, df2, df3, df4, df5, df6, df7) {
-    input <- stripWhitespace(removePunctuation(tolower(input$userText)))
-    splitInput <- unlist(strsplit(input, split = " "))
+  predictNgram <- function(x, df1, df2, df3, df4, df5, df6, df7) {
+    x <- stripWhitespace(removePunctuation(tolower(x)))
+    splitInput <- unlist(strsplit(x, split = " "))
     heptaPred <- as.character(NULL)
     hexaPred <- as.character(NULL)
     pentaPred <- as.character(NULL)
@@ -38,7 +40,7 @@ shinyServer(function(input, output) {
     }
     if  (length(heptaPred) > 0){
       print("I was able to match the last six words you entered")
-      prediction<-heptaPred
+      return(heptaPred)
     } else { 
       if (length(splitInput) >= 5){
         input2 <- paste(tail(splitInput, 5), collapse = " ")
@@ -46,7 +48,7 @@ shinyServer(function(input, output) {
       }
       if  (length(hexaPred) > 0){
         print("I was able to match the last five words you entered")
-        prediction<-hexaPred
+        return(hexaPred)
       } else { 
         if (length(splitInput) >= 4){
           input2 <- paste(tail(splitInput, 4), collapse = " ")
@@ -54,7 +56,7 @@ shinyServer(function(input, output) {
         }
         if  (length(pentaPred) > 0){
           print("I was able to match the last four words you entered")
-          prediction<-pentaPred
+          return(pentaPred)
         } else {  
           if (length(splitInput) >= 3){
             input2 <- paste(tail(splitInput, 3), collapse = " ")
@@ -62,7 +64,7 @@ shinyServer(function(input, output) {
           }
           if  (length(quadPred) > 0){
             print("I was able to match the last three words you entered")
-            prediction<-quadPred
+            return(quadPred)
           } else {
             if (length(splitInput) >= 2){
               input2 <- paste(tail(splitInput, 2), collapse = " ")
@@ -70,7 +72,7 @@ shinyServer(function(input, output) {
             }
             if  (length(triPred) > 0){
               print("I was able to match the last two words you entered")
-              prediction<-triPred
+              return(triPred)
             } else {
               if (length(splitInput) > 1){
                 input2 <- tail(splitInput, 1)
@@ -78,40 +80,32 @@ shinyServer(function(input, output) {
               }
               if  (length(biPred) > 0){
                 print("I was able to match the last word you entered")
-                prediction<-biPred
+                return(biPred)
               } else {
                 uniPred <- head(df1$Word, input$numPred)
                 print("I was not able to find any matches, 
                       so I will provide the most common word(s)")
-                prediction<-uniPred
+                return(uniPred)
               }
             }
           }
         }
       }
     }
-  return(prediction)
   }  
-  
-  
-  
+
   output$wordPred <- renderText({
     
-    predictNgram(input$userText, k = input$numPred)
+    predictNgram(input$userText, df1, df2, df3, df4, df5, df6, df7)
     
   })
   
-  prediction = reactive({
-    k = input$numPred
-    predList = predictNgram(input$userText, k)
-    
-  })
-  
+# this is working
   output$kText = renderText(
     paste0(
       "The top ", 
       input$numPred, 
-      " predicted word(s) is:", 
+      " predicted word(s):", 
       collapse = "")
   )    
 })
