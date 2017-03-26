@@ -8,6 +8,8 @@ Desktop.ini
 # Data
 final/
 *.zip
+*.csv
+*.rds
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
