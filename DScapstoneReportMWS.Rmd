@@ -158,7 +158,7 @@ if (!file.exists("ngram_tokenizer.R")) {
 download.file("https://raw.githubusercontent.com/zero323/r-snippets/master/R/ngram_tokenizer.R", 
     destfile = paste(getwd(),"/ngram_tokenizer.R", sep=""))
 }
-source("ngram_Tokenizer.R")
+source("ngram_tokenizer.R")
 unigram_tokenizer <- ngram_tokenizer(1)
 uniList <- unigram_tokenizer(datFin)
 freqNames <- as.vector(names(table(unlist(uniList))))

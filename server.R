@@ -11,13 +11,13 @@ library(shiny)
 library(markdown)
 library(tm)
 # Load in data objects from rds
-df1 = readRDS("top10.Rds")
-df2 = readRDS("df2tiny.Rds")
-df3 = readRDS("df3tiny.Rds")
-df4 = readRDS("df4tiny.Rds")
-df5 = readRDS("df5tiny.Rds")
-df6 = readRDS("df6tiny.Rds")
-df7 = readRDS("df7tiny.Rds")
+df1 = readRDS("top10.rds")
+df2 = readRDS("df2tiny.rds")
+df3 = readRDS("df3tiny.rds")
+df4 = readRDS("df4tiny.rds")
+df5 = readRDS("df5tiny.rds")
+df6 = readRDS("df6tiny.rds")
+df7 = readRDS("df7tiny.rds")
 
 # Define server logic required to predict next word
 shinyServer(function(input, output) {
@@ -74,8 +74,8 @@ shinyServer(function(input, output) {
               print("I was able to match the last two words you entered")
               return(triPred)
             } else {
-              if (length(splitInput) > 1){
-                input2 <- tail(splitInput, 1)
+              if (length(splitInput) >= 1){
+                input2 <- paste(tail(splitInput, 1), collapse = " ")
                 biPred <- head(df2[which(df2$biMinus1 == input2),]$NextWord, input$numPred)
               }
               if  (length(biPred) > 0){
@@ -101,7 +101,7 @@ shinyServer(function(input, output) {
   })
   
 # this is working
-  output$kText = renderText(
+  output$n = renderText(
     paste0(
       "The top ", 
       input$numPred, 

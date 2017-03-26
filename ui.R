@@ -11,15 +11,16 @@
 library(shiny)
 library(markdown)
 
-# Define UI for application that draws a histogram
+# Define UI for application that predicts the next word
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Johns Hopkins Data Science Specialization Capstone"),
+  titlePanel("Johns Hopkins Data Science Specialization Capstone Project"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
+      h2("NxtWrd"),
       h5("by marskar"),
       br(),
       h4("Please type your entry below"),
@@ -28,10 +29,10 @@ shinyUI(fluidPage(
                 value = "" # 
       ),
        sliderInput("numPred",
-                   "Number of word to predict:",
+                   "Max. number of words to predict:",
                    min = 1,
                    max = 10,
-                   value = 4)
+                   value = 1)
     ), # End of sideBar
     
     # Show a plot of the generated distribution
@@ -39,15 +40,13 @@ shinyUI(fluidPage(
       tabsetPanel(
         tabPanel(
           "Prediction",
-          h4(textOutput("kText")),
-          h3(textOutput("wordPred"), align="center"),
-          # HTML("</span>"),
+          h4(textOutput("n")),
+          h3(textOutput("wordPred"), align="left"),
           br(),
-          hr()#,
-          # div(dataTableOutput("predTable"), style='font-size:150%')        
+          hr()
         ),
-        tabPanel("App documentation",
-                 includeMarkdown("documentation.Rmd")
+        tabPanel("App info",
+                 includeMarkdown("about.Rmd")
         )
       )
     ) # End of mainPanel
