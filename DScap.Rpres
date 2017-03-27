@@ -1,51 +1,75 @@
-Coursera Data Science Specialization Capstone Project
+<style>
+/* JHU DSS background */
+
+.section .reveal .state-background {
+    background: transparent;}
+
+.section .reveal h1,
+.section .reveal p {
+    color: black;
+    font-size: 50px;
+}
+
+
+</style>
+
+Coursera Data Science Specialization Capstone
 ========================================================
-author: Martin Skarzynski
+<center> By Martin Skarzynski </center>
 
-The [NxtWrd application](https://marskar.shinyapps.io/DScapFinal/) for predicting the next word.
+<center> Introducing... &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; **[NxtWrd](https://marskar.shinyapps.io/DScapFinal/)** </center>
 
-The application is the capstone project for the Coursera Data Science specialization held by professors of the Johns Hopkins University and in cooperation with SwiftKey.
-![Coursera Logo](Coursera.png)
-![SwiftKey Logo](SwiftKey.png)
-![DSS Logo](DSS.png)
-The Objective
-========================================================
-
-The main goal of this capstone project is to build a shiny application that is able to predict the next word. 
-
-This exercise was divided into seven sub tasks like data cleansing, exploratory analysis, the creation of a predictive model and more.
+<center> A Shiny app for next word text prediction.</center>
+<div align="center">
+<img src="Coursera.png" width=25% height=25%> <img src="SwiftKey.png" width=25% height=25%> <img src="DSS.png" width=10% height=10%>
+</div>
 
 
-All text mining and natural language processing was done with the usage of a variety of well-known R packages.
-
-The Applied Methods & Models
-========================================================
-
-After creating a data sample from the HC Corpora data, this sample was cleaned by conversion to lowercase, removing punctuation, links, white space, numbers and all kinds of special characters.
-This data sample was then [tokenized](http://en.wikipedia.org/wiki/Tokenization_%28lexical_analysis%29) into so-called [*n*-grams](http://en.wikipedia.org/wiki/N-gram). 
-> In the fields of computational linguistics and probability, an *n*-gram is a contiguous sequence of n items from a given sequence of text or speech. ([Source](http://en.wikipedia.org/wiki/N-gram))
-
-
-Those aggregated bi-,tri- and quadgram term frequency matrices have been transferred into frequency dictionaries.
-
-The resulting data.frames are used to predict the next word in connection with the text input by a user of the described application and the frequencies of the underlying *n*-grams table.
-
-
-The Usage Of The Application
+Background
 ========================================================
 
+<font size=5>
+The [NxtWrd](https://marskar.shinyapps.io/DScapFinal/) app predicts the subsequent word based on text entered by the user. 
 
-![App Screenshot](NxtWrdScreen.PNG)
+- The prediction algorithm underlying the app was developed using a large dataset, consisting of news articles, tweets (Twitter), and blog posts.
+- The original data is available for download [here](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip) in zip format. The data are quite large (~548MB), so 50000 line samples were obtained from each dataset.
+- Profanity was removed using two profanity lists created by github users [LDNOOBW](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/blob/master/en) and [jamiew](https://gist.github.com/jamiew/1112488).
+- The data processing was done with only the [tm package](https://www.jstatsoft.org/article/view/v025i05), and the app additionally requires the [Shiny](https://shiny.rstudio.com/) and [markdown](https://daringfireball.net/projects/markdown/) packages.
 
+</font> 
 
-Additional Information
+Methods and Design
 ========================================================
 
-* The next word prediction app is hosted on shinyapps.io: [https://marskar.shinyapps.io/DScapFinal/](https://marskar.shinyapps.io/DScapFinal/)
+<font size=5>
+- The data samples were submitted to a process called [tokenization](http://en.wikipedia.org/wiki/Tokenization_%28lexical_analysis%29), through which words are grouped into so-called [N-grams](http://en.wikipedia.org/wiki/N-gram). 
+- Lists of uni- to heptagrams (i.e. 1 to 7 words) were generated using the [ngram_tokenizer](https://raw.githubusercontent.com/zero323/r-snippets/master/R/ngram_tokenizer.R) snippet created by Maciej Szymkiewicz, aka [zero323](https://github.com/zero323/r-snippets/tree/master/R) on Github.
+- These lists were ordered by frequency and converted into dataframes to be used in a simple backoff model, which moves from heptagrams to bigrams, until it finds and returns a match or exhausts all of available data.
+- If no match is found, common words (top unigrams) are suggested. In other words, [NxtWrd](https://marskar.shinyapps.io/DScapFinal/) will always provide a suggestion, even when confronted with unknown words.
 
+</font> 
 
-* All of code used during the course of the Capstone experience can be found at this [GitHub repo](https://github.com/marskar/DScapFinal)
+App Usage and Interface
+========================================================
 
-* This pitch deck is located here: [http://rpubs.com/marskar/DScapFinal](http://rpubs.com/marskar/DScapFinal)
+<font size=5>
+The user interface is very simple, consisting of 
+- A box for text entry, a slider to set the maximum number of words that can be returned,
+- The *Prediction* tab, which shows the current slider setting and predicted word(s), and
+- The *App info* tab, which has documentation and links.
+<div align="bottom">
+<img src="NxtWrdScreen.PNG" width=85% height=85%>
+</div>
 
-* To learn more about the Coursera Data Science Specialization, please visit this webpage [https://www.coursera.org/specialization/jhudatascience](https://www.coursera.org/specialization/jhudatascience/1)
+</font> 
+
+Conclusions and Final Thoughts
+========================================================
+
+<font size=5>
+- [NxtWrd](https://marskar.shinyapps.io/DScapFinal/) is a versatile app for next word prediction that can easily be adapted to other datasets. For example, data frames consisting of ngrams from other languages and fed into the app to provide foreign language support. 
+- Minimal dependencies and small datasets allow [NxtWrd](https://marskar.shinyapps.io/DScapFinal/) to run in real time.
+- The code (available at [this GitHub repo](https://github.com/marskar/DScapFinal)) is designed to be robust and readable. Feel free to use it to prepare new datasets and set up your own instance of [NxtWrd](https://marskar.shinyapps.io/DScapFinal/). There is surely room for improvement, so suggestions and pull requests are welcome and appreciated!
+- To learn more about the Coursera Data Science Specialization, please visit [this webpage](https://www.coursera.org/specialization/jhudatascience).
+
+</font> 

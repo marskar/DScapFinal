@@ -1,27 +1,22 @@
-
-# Next Word prediction app info
-
 I made this Shiny app as part of the Capstone Project of the 
 [Coursera Data Science 
 Specialization](https://www.coursera.org/specialization/jhudatascience), created by Roger Peng, Jeff Leek and Brian Caffo of Johns Hopkins University. The Data Science Specialization Capstone is a collaboration with [Swiftkey](http://swiftkey.com/).
 
+###  How do I use the app?
 
-##  How do I use the app?
+The user interface is very simple.
 
+- Enter text into the box in the sidebar.
+- Use the slider below the text entry box to set the maximum number of words that can be returned,
+- Output will show up in the *Prediction* tab and will automatically adapt to the text entry and slider setting.
+- Visit the *App info* tab, which has documentation and links.
 
+### What's under the hood?
+Check out the [NxtWrd Pitch Presentation](http://rpubs.com/marskar/DScapFinal) for more information!
 
-## What's under the hood?
+### Recreate and modify the app 
+The code for obtaining and processing the data and running the app are available at this [GitHub repository](https://github.com/marskar/DScapFinal). 
 
+To run your own instance of the app, you will need the [tm](https://www.jstatsoft.org/article/view/v025i05), [Shiny](https://shiny.rstudio.com/) and [markdown](https://daringfireball.net/projects/markdown/) packages. To create new data files, use the code in the DScapstoneReportMWS.Rmd, WordPredAlgo.Rmd and ngram_tokenizer.R files.
 
-
-## GitHub Repository
-
-The code for obtaining and processing the data and running the app (shiny server.r and ui.r files) are available at this [GitHub repository](https://github.com/marskar/DScapFinal).
-
-## Modify the app
-
-To rebuild the app on your own machine, you will need to first download the data, process it and create .rds files using the DScapstoneReportMWS.Rmd, WordPredAlgo.Rmd and ngram_tokenizer.R files. Then open the server.r and ui.r files in Rstudio and click run app. The all files depend on the tm package. To run the shiny app, you will need the shiny and markdown packages.
-
-### Suggestions and Pull Requests on GitHub are welcome and appreciated!
-
-
+**Suggestions and Pull Requests on GitHub are welcome and appreciated!**
